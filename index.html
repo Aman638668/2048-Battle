@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>2048 Battle - Timed Round (Fixed)</title>
+    <title>2048 Battle - Mobile Friendly</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -13,10 +13,12 @@
             'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         @keyframes slideDown { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-slide-down { animation: slideDown 0.5s ease-out; }
+        .animate-slide-down { animation: slideDown 0.45s ease-out; }
+        /* small visual tweak for footer */
+        .footer-link:hover { text-decoration: underline; }
     </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-purple-100 to-blue-100">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -153,33 +155,33 @@
             return bestMove;
         };
 
-        // Arrow SVG Components
-        const ArrowUp = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
+        // Arrow SVG Components (kept small so they look good on mobile)
+        const ArrowUp = ({size=20}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
                 <path d="M12 19V5M5 12l7-7 7 7"/>
             </svg>
         );
 
-        const ArrowDown = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
+        const ArrowDown = ({size=20}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
                 <path d="M12 5v14M19 12l-7 7-7-7"/>
             </svg>
         );
 
-        const ArrowLeft = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
+        const ArrowLeft = ({size=20}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
         );
 
-        const ArrowRight = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
+        const ArrowRight = ({size=20}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{margin: '0 auto'}}>
                 <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
         );
 
-        const RotateCcw = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        const RotateCcw = ({size=18}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                 <path d="M3 3v5h5"/>
             </svg>
@@ -193,6 +195,9 @@
             const [gameOver, setGameOver] = useState({ player: false, ai: false });
             const [winner, setWinner] = useState(null);
             const [showModal, setShowModal] = useState(false);
+
+            // Controls modal (popup)
+            const [controlsOpen, setControlsOpen] = useState(false);
 
             // AI speed per-move (ms)
             const [aiDelay, setAiDelay] = useState(700);
@@ -298,7 +303,6 @@
                         }, aiDelay);
                     }
                 }
-                // we intentionally don't cleanup here because other places clear on reset/stop
             }, [gameOver.player, gameOver.ai, aiDelay, performAiMove]);
 
             // If aiDelay changes and an interval exists, restart it to use new delay
@@ -416,6 +420,7 @@
                 setTimeLeft(0);
             };
 
+            // responsive tile sizes: small on mobile, larger on md+
             const Grid = ({ grid }) => (
                 <div className="inline-block bg-gray-300 p-2 rounded-lg">
                     {grid.map((row, r) => (
@@ -423,9 +428,9 @@
                             {row.map((cell, c) => (
                                 <div
                                     key={`${r}-${c}`}
-                                    className={`w-16 h-16 flex items-center justify-center text-xl font-bold rounded ${
-                                        cell === 0 ? 'bg-gray-200' : COLORS[cell] || 'bg-purple-600 text-white'
-                                    }`}
+                                    className={`flex items-center justify-center font-bold rounded 
+                                        ${cell === 0 ? 'bg-gray-200' : COLORS[cell] || 'bg-purple-600 text-white'}
+                                        w-12 h-12 md:w-16 md:h-16 text-lg md:text-xl`}
                                 >
                                     {cell !== 0 && cell}
                                 </div>
@@ -444,134 +449,153 @@
             };
 
             return (
-                <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-8">
-                    <div className="max-w-6xl mx-auto">
-                        <h1 className="text-4xl font-bold text-center mb-2 text-gray-800">2048 Battle - Timed Round</h1>
-                        <p className="text-center text-gray-600 mb-8">Play against the AI. Start a 3-minute round — whoever has more points when time's up wins.</p>
+                <div className="min-h-screen p-4 md:p-8 flex flex-col">
+                    <div className="max-w-6xl mx-auto flex-1 w-full">
+                        <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-gray-800">2048 Battle - Timed Round</h1>
+                        <p className="text-center text-gray-600 mb-6">Play against the AI. Start a 3-minute round — whoever has more points when time's up wins.</p>
                         
-                        <div className="flex justify-center gap-4 mb-6">
-                            <div className="bg-white p-4 rounded shadow">
+                        <div className="flex flex-col md:flex-row justify-center items-stretch gap-4 mb-6">
+                            <div className="bg-white p-3 md:p-4 rounded shadow flex-1">
                                 <div className="text-sm text-gray-600">AI per-move delay</div>
                                 <div className="flex gap-2 mt-2">
                                     <button onClick={() => setAiDelay(300)} className={`px-3 py-1 rounded ${aiDelay===300 ? 'bg-blue-600 text-white' : 'bg-white border'}`}>Fast</button>
                                     <button onClick={() => setAiDelay(700)} className={`px-3 py-1 rounded ${aiDelay===700 ? 'bg-blue-600 text-white' : 'bg-white border'}`}>Default</button>
                                     <button onClick={() => setAiDelay(1500)} className={`px-3 py-1 rounded ${aiDelay===1500 ? 'bg-blue-600 text-white' : 'bg-white border'}`}>Slow</button>
                                 </div>
+                                <div className="text-xs text-gray-500 mt-2">Controls popup available at bottom; tap to open.</div>
                             </div>
 
-                            <div className="bg-white p-4 rounded shadow flex flex-col items-center justify-center">
+                            <div className="bg-white p-3 md:p-4 rounded shadow flex flex-col items-center justify-center">
                                 <div className="text-sm text-gray-600 mb-2">Timed round</div>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => startTimedRound(180000)}
-                                        className="bg-purple-600 text-white px-4 py-2 rounded font-semibold shadow hover:opacity-90"
+                                        className="bg-purple-600 text-white px-3 md:px-4 py-2 rounded font-semibold shadow hover:opacity-90"
                                     >
-                                        Start 3 min Round
+                                        Start 3 min
                                     </button>
                                     <button
                                         onClick={() => stopTimedRound()}
-                                        className="bg-yellow-400 text-white px-4 py-2 rounded font-semibold shadow hover:opacity-90"
+                                        className="bg-yellow-400 text-white px-3 md:px-4 py-2 rounded font-semibold shadow hover:opacity-90"
                                     >
-                                        Stop Round
+                                        Stop
                                     </button>
                                 </div>
                                 <div className="text-xs text-gray-500 mt-2">When round ends, the higher score wins.</div>
                             </div>
 
-                            <div className="bg-white p-4 rounded shadow flex flex-col items-center justify-center">
+                            <div className="bg-white p-3 md:p-4 rounded shadow flex flex-col items-center justify-center">
                                 <div className="text-sm text-gray-600">Round timer</div>
                                 <div className="text-2xl font-bold mt-1 text-gray-800">{ isTimedRound ? formatTime(timeLeft) : '--:--' }</div>
                                 <div className="text-xs text-gray-500 mt-1">{ isTimedRound ? 'Round running' : 'No active round' }</div>
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-8 mb-8">
-                            <div className="bg-white p-6 rounded-xl shadow-lg">
+                        <div className="grid md:grid-cols-2 gap-6 mb-6">
+                            <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-2xl font-bold text-blue-600">You</h2>
+                                    <h2 className="text-xl md:text-2xl font-bold text-blue-600">You</h2>
                                     <div className="text-right">
                                         <div className="text-sm text-gray-600">Score</div>
-                                        <div className="text-2xl font-bold text-blue-600">{playerScore}</div>
+                                        <div className="text-lg md:text-2xl font-bold text-blue-600">{playerScore}</div>
                                     </div>
                                 </div>
-                                <Grid grid={playerGrid} />
+                                <div className="flex justify-center">
+                                    <Grid grid={playerGrid} />
+                                </div>
                                 {!isTimedRound && gameOver.player && !gameOver.ai && (
-                                    <div className="mt-4 text-orange-600 font-semibold">
+                                    <div className="mt-4 text-orange-600 font-semibold text-center">
                                         ⏸️ Waiting for AI to finish...
                                     </div>
                                 )}
                             </div>
-                            
-                            <div className="bg-white p-6 rounded-xl shadow-lg">
+
+                            <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-2xl font-bold text-red-600">AI</h2>
+                                    <h2 className="text-xl md:text-2xl font-bold text-red-600">AI</h2>
                                     <div className="text-right">
                                         <div className="text-sm text-gray-600">Score</div>
-                                        <div className="text-2xl font-bold text-red-600">{aiScore}</div>
+                                        <div className="text-lg md:text-2xl font-bold text-red-600">{aiScore}</div>
                                     </div>
                                 </div>
-                                <Grid grid={aiGrid} />
+                                <div className="flex justify-center">
+                                    <Grid grid={aiGrid} />
+                                </div>
                                 {!isTimedRound && gameOver.ai && !gameOver.player && (
-                                    <div className="mt-4 text-orange-600 font-semibold">
+                                    <div className="mt-4 text-orange-600 font-semibold text-center">
                                         ⏸️ AI finished! Your turn...
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="text-center">
-                                    <h3 className="font-bold text-lg mb-2">Controls</h3>
-                                    <div className="grid grid-cols-3 gap-2 mb-4">
-                                        <div></div>
+                        {/* NOTE: removed the big control box — replaced with a Controls popup modal that opens from footer */}
+
+                        {/* Controls modal (popup) */}
+                        {controlsOpen && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                <div className="absolute inset-0 bg-black bg-opacity-40" onClick={() => setControlsOpen(false)}></div>
+                                <div className="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-slide-down z-10">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-lg">Controls</h3>
+                                        <button onClick={() => setControlsOpen(false)} className="text-gray-600 px-2 py-1 rounded hover:bg-gray-100">Close</button>
+                                    </div>
+
+                                    <div className="flex flex-col items-center gap-3 mb-4">
+                                        <div className="grid grid-cols-3 gap-2 items-center">
+                                            <div></div>
+                                            <button
+                                                onClick={() => handlePlayerMove('up')}
+                                                className="bg-blue-500 text-white p-3 rounded-lg touch-manipulation"
+                                                aria-label="Up"
+                                            >
+                                                <ArrowUp size={20} />
+                                            </button>
+                                            <div></div>
+
+                                            <button
+                                                onClick={() => handlePlayerMove('left')}
+                                                className="bg-blue-500 text-white p-3 rounded-lg touch-manipulation"
+                                                aria-label="Left"
+                                            >
+                                                <ArrowLeft size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => handlePlayerMove('down')}
+                                                className="bg-blue-500 text-white p-3 rounded-lg touch-manipulation"
+                                                aria-label="Down"
+                                            >
+                                                <ArrowDown size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => handlePlayerMove('right')}
+                                                className="bg-blue-500 text-white p-3 rounded-lg touch-manipulation"
+                                                aria-label="Right"
+                                            >
+                                                <ArrowRight size={20} />
+                                            </button>
+                                        </div>
+
+                                        <p className="text-sm text-gray-600 mt-2">Or swipe / use arrow keys</p>
+
                                         <button
-                                            onClick={() => handlePlayerMove('up')}
-                                            className="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                            disabled={!isTimedRound && gameOver.player || showModal}
+                                            onClick={resetGame}
+                                            className="mt-3 bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2"
                                         >
-                                            <ArrowUp />
-                                        </button>
-                                        <div></div>
-                                        <button
-                                            onClick={() => handlePlayerMove('left')}
-                                            className="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                            disabled={!isTimedRound && gameOver.player || showModal}
-                                        >
-                                            <ArrowLeft />
-                                        </button>
-                                        <button
-                                            onClick={() => handlePlayerMove('down')}
-                                            className="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                            disabled={!isTimedRound && gameOver.player || showModal}
-                                        >
-                                            <ArrowDown />
-                                        </button>
-                                        <button
-                                            onClick={() => handlePlayerMove('right')}
-                                            className="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                            disabled={!isTimedRound && gameOver.player || showModal}
-                                        >
-                                            <ArrowRight />
+                                            <RotateCcw size={16} />
+                                            New Game
                                         </button>
                                     </div>
-                                    <p className="text-sm text-gray-600">Or use arrow keys</p>
+
+                                    <div className="text-xs text-gray-500">Tip: close this popup to free screen space while playing on mobile.</div>
                                 </div>
-                                
-                                <button
-                                    onClick={resetGame}
-                                    className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 flex items-center gap-2 font-semibold"
-                                >
-                                    <RotateCcw />
-                                    New Game (reset)
-                                </button>
                             </div>
-                        </div>
+                        )}
 
                         {/* Victory/Loss Modal */}
                         {showModal && winner && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                                <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-slide-down ${
+                                <div className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full animate-slide-down ${
                                     winner === 'player' ? 'border-4 border-green-500' : 
                                     winner === 'ai' ? 'border-4 border-red-500' : 
                                     'border-4 border-yellow-500'
@@ -579,51 +603,39 @@
                                     <div className="text-center">
                                         {winner === 'player' && (
                                             <>
-                                                <div className="text-6xl mb-4">🎉</div>
-                                                <h2 className="text-4xl font-bold text-green-600 mb-2">
-                                                    CONGRATULATIONS!
-                                                </h2>
-                                                <p className="text-2xl font-semibold text-gray-800 mb-4">
-                                                    You Won! 🏆
-                                                </p>
+                                                <div className="text-5xl mb-2">🎉</div>
+                                                <h2 className="text-2xl font-bold text-green-600 mb-1">CONGRATULATIONS!</h2>
+                                                <p className="text-md font-semibold text-gray-800 mb-2">You Won! 🏆</p>
                                             </>
                                         )}
                                         {winner === 'ai' && (
                                             <>
-                                                <div className="text-6xl mb-4">😔</div>
-                                                <h2 className="text-4xl font-bold text-red-600 mb-2">
-                                                    ROUND OVER
-                                                </h2>
-                                                <p className="text-2xl font-semibold text-gray-800 mb-4">
-                                                    AI has more points.
-                                                </p>
+                                                <div className="text-5xl mb-2">😔</div>
+                                                <h2 className="text-2xl font-bold text-red-600 mb-1">ROUND OVER</h2>
+                                                <p className="text-md font-semibold text-gray-800 mb-2">AI has more points.</p>
                                             </>
                                         )}
                                         {winner === 'tie' && (
                                             <>
-                                                <div className="text-6xl mb-4">🤝</div>
-                                                <h2 className="text-4xl font-bold text-yellow-600 mb-2">
-                                                    IT'S A TIE!
-                                                </h2>
-                                                <p className="text-2xl font-semibold text-gray-800 mb-4">
-                                                    Well played! ⚖️
-                                                </p>
+                                                <div className="text-5xl mb-2">🤝</div>
+                                                <h2 className="text-2xl font-bold text-yellow-600 mb-1">IT'S A TIE!</h2>
+                                                <p className="text-md font-semibold text-gray-800 mb-2">Well played! ⚖️</p>
                                             </>
                                         )}
                                         
-                                        <div className="bg-gray-100 rounded-lg p-4 mb-6">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-lg font-semibold text-blue-600">Your Score:</span>
-                                                <span className="text-2xl font-bold text-blue-600">{playerScore}</span>
+                                        <div className="bg-gray-100 rounded-lg p-3 mb-4">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-sm font-semibold text-blue-600">Your Score:</span>
+                                                <span className="text-lg font-bold text-blue-600">{playerScore}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-lg font-semibold text-red-600">AI Score:</span>
-                                                <span className="text-2xl font-bold text-red-600">{aiScore}</span>
+                                                <span className="text-sm font-semibold text-red-600">AI Score:</span>
+                                                <span className="text-lg font-bold text-red-600">{aiScore}</span>
                                             </div>
-                                            <div className="mt-3 pt-3 border-t-2 border-gray-300">
+                                            <div className="mt-2 pt-2 border-t-2 border-gray-300">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-lg font-semibold text-gray-700">Difference:</span>
-                                                    <span className="text-xl font-bold text-gray-800">
+                                                    <span className="text-sm font-semibold text-gray-700">Difference:</span>
+                                                    <span className="text-md font-bold text-gray-800">
                                                         {Math.abs(playerScore - aiScore)} points
                                                     </span>
                                                 </div>
@@ -632,7 +644,7 @@
                                         
                                         <button
                                             onClick={() => { resetGame(); }}
-                                            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-lg hover:from-purple-600 hover:to-blue-600 font-bold text-lg shadow-lg transform transition hover:scale-105"
+                                            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg font-bold"
                                         >
                                             Play Again / Reset 🎮
                                         </button>
@@ -641,6 +653,42 @@
                             </div>
                         )}
                     </div>
+
+                    {/* Small footer (fixed at bottom on mobile, centered on desktop) */}
+                    <footer className="w-full mt-6 md:mt-8">
+                        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 p-3 md:p-4 bg-white bg-opacity-80 rounded-lg shadow-md">
+                            <div className="text-sm text-gray-700 text-center md:text-left">
+                                <div>Built by Aman — <a className="footer-link font-medium text-blue-600" href="https://github.com/Aman638668" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+                                <div className="mt-1">Contact (WooCommerce / dev): <a className="footer-link font-medium text-blue-600" href="mailto:amanuxstudio@gmail.com">amanuxstudio@gmail.com</a></div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                {/* Controls open button (small) */}
+                                <button
+                                    onClick={() => setControlsOpen(true)}
+                                    className="bg-blue-600 text-white px-3 py-2 rounded-md text-sm md:text-base flex items-center gap-2 shadow"
+                                >
+                                    Controls
+                                </button>
+
+                                {/* New Game quick button */}
+                                <button
+                                    onClick={resetGame}
+                                    className="bg-green-500 text-white px-3 py-2 rounded-md text-sm md:text-base flex items-center gap-2 shadow"
+                                >
+                                    New Game
+                                </button>
+
+                                {/* Start 3-min quick */}
+                                <button
+                                    onClick={() => startTimedRound(180000)}
+                                    className="bg-purple-600 text-white px-3 py-2 rounded-md text-sm md:text-base flex items-center gap-2 shadow"
+                                >
+                                    Start 3 min
+                                </button>
+                            </div>
+                        </div>
+                    </footer>
                 </div>
             );
         }
@@ -649,3 +697,4 @@
     </script>
 </body>
 </html>
+<!-- Enjoy buddy -->
